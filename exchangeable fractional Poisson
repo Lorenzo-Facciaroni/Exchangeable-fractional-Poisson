@@ -1,0 +1,244 @@
+library(MittagLeffleR)
+library('kStatistics')
+library(stabledist)
+
+
+# Figure 1
+
+rm(list = ls())
+
+set.seed(1)
+
+Ex_fract <- function(nu, t){
+
+n_derivatives <- 10
+lambda <- 1
+z <- -(lambda*t)^nu
+
+# The following vector contains the first n_derivatives derivatives of -(\lambda t)^{\nu}
+derivs_g <- array(NA, n_derivatives)
+for (n in 1:n_derivatives) {
+  a <- 1
+  for (j in 1:n) {
+    a <- a*(nu - j + 1)
+  }
+  derivs_g[n] <- -lambda^{nu} * a * t^(nu - n)
+}
+
+# The following vector contains the first n_derivatives derivatives of the Mittag-Leffler function calculated in z.
+# We do not include the function itself as the 0 derivative
+derivs_f <- array(NA, dim = n_derivatives) 
+for (n in 1:n_derivatives) {
+  derivs_f[n] <- factorial(n) * mlf(z, a = nu, b = n*nu + 1, g = n + 1)
+}
+
+# The following function will be used to calculate the coefficient in p_n(t) 
+# which depends on two variables.
+coeff <- function(n, t){
+	if(n >= 170 || n < 0){
+		warning("n is either negative or too large.")
+		return()
+	}
+  x <- (-1)^n / (factorial(n)) * t^n
+  return(x)
+}
+
+
+# n = 0
+p_0 <- mlf(z,nu,1,1) 
+
+# n = 1
+n <- 1
+p_1 <- coeff(n,t) * derivs_f[1] * derivs_g[1]
+
+# n = 2
+n <- 2
+p_2 <- coeff(n,t) * ( derivs_f[1] * derivs_g[2] + derivs_f[2] * derivs_g[1]^2 )
+
+# n = 3
+n <- 3
+# eBellPol(3,0)
+p_3 <- coeff(n,t) * (derivs_f[1] * derivs_g[3] + 
+                                                     3*derivs_f[2] * derivs_g[1] * derivs_g[2]+
+                                                     derivs_f[3] * derivs_g[1]^3)
+
+# n = 4
+n <- 4
+# eBellPol(4,0)  # See eBellPol(4,k) for k = 1,2,3,4
+p_4 <- coeff(n,t) * ( derivs_f[1] * derivs_g[4] + 
+                      4 * derivs_f[2] * derivs_g[1] * derivs_g[3] + 3 * derivs_f[2] * derivs_g[2]^2 +
+                      6 * derivs_f[3] * derivs_g[1]^2 * derivs_g[2] +
+                      1 * derivs_f[4] * derivs_g[1]^4)
+
+# n = 5
+n <- 5
+# eBellPol(5,0)
+p_5 <- coeff(n,t) * (derivs_f[1] * derivs_g[5] +
+                     derivs_f[2] * (10 * derivs_g[2] * derivs_g[3] + 5 * derivs_g[1] * derivs_g[4]) +
+                     derivs_f[3] * (15 * derivs_g[1] * derivs_g[2]^2 + 10 * derivs_g[1]^2 * derivs_g[3]) +
+                     derivs_f[4] * 10 * derivs_g[1]^3 * derivs_g[2] +
+                     derivs_f[5] * derivs_g[1]^5)
+
+# n = 6
+n <- 6
+# eBellPol(n,0)
+p_6 <- coeff(n,t) * (derivs_f[1] * derivs_g[6] + 
+                     derivs_f[2] * (10 * derivs_g[3]^2 + 15 * derivs_g[2] * derivs_g[4]  + 6 * derivs_g[1] * derivs_g[5]) +
+                     derivs_f[3] * (15 * derivs_g[2]^3 + 60 * derivs_g[1] * derivs_g[2] * derivs_g[3] + 15 * derivs_g[1]^2 * derivs_g[4]) +
+                     derivs_f[4] * (45 * derivs_g[1]^2 * derivs_g[2]^2 + 20 * derivs_g[1]^3 * derivs_g[3]) + 
+                     derivs_f[5] * (15 * derivs_g[1]^4 * derivs_g[2]) +
+                     derivs_f[6] * derivs_g[1]^6)
+
+# n = 7
+n <- 7
+# eBellPol(n,0)
+p_7 <- coeff(n,t) * (  derivs_f[1] * derivs_g[7] +
+                       derivs_f[2] * (35 * derivs_g[3] * derivs_g[4] + 21 * derivs_g[2] * derivs_g[5] 
+                                      + 7 * derivs_g[1] * derivs_g[6]) +
+                       derivs_f[3] * (105 * derivs_g[2]^2 * derivs_g[3] + 70 * derivs_g[1] * derivs_g[3]^2 
+                                      + 105 * derivs_g[1] * derivs_g[2] * derivs_g[4] 
+                                      + 21 * derivs_g[1]^2 * derivs_g[5]) +
+                       derivs_f[4] *  (105 * derivs_g[1] * derivs_g[2]^3 
+                                      + 210 * derivs_g[1]^2 * derivs_g[2] * derivs_g[3] 
+                                      + 35 * derivs_g[1]^3 * derivs_g[4]) +
+                       derivs_f[5] * (105 * derivs_g[1]^3 * derivs_g[2]^2 + 35 * derivs_g[1]^4 * derivs_g[3]) +
+                       derivs_f[6] * 21 * derivs_g[1]^5 * derivs_g[2] +
+                       derivs_f[7] * derivs_g[1]^7)
+
+# n = 8
+n <- 8
+# eBellPol(n,0)
+
+p_8 <- coeff(n,t) * ( derivs_f[1] * derivs_g[8] +
+                      derivs_f[2] * (35 * derivs_g[4]^2 + 56 * derivs_g[3] * derivs_g[5] + 28 * derivs_g[2] * derivs_g[6] + 8 * derivs_g[1] * derivs_g[7]) +
+                      derivs_f[3] * (280 * derivs_g[2] * derivs_g[3]^2 + 210 * derivs_g[4] * derivs_g[2]^2 + 280 * derivs_g[1] * derivs_g[3] * derivs_g[4] + 168 * derivs_g[1] * derivs_g[2] * derivs_g[5] + 28 * derivs_g[1]^2 * derivs_g[6]) +
+                      derivs_f[4] * (105 * derivs_g[2]^4 + 840 * derivs_g[1] * derivs_g[2]^2 * derivs_g[3] + 280 * derivs_g[1]^2 * derivs_g[3]^2 + 420 * derivs_g[1]^2 * derivs_g[2] * derivs_g[4] + 56 * derivs_g[1]^3 * derivs_g[5]) +
+                      derivs_f[5] * (420 * derivs_g[2]^3 * derivs_g[1]^2 + 560 * derivs_g[1]^3 * derivs_g[2] * derivs_g[3] + 70 * derivs_g[1]^4 * derivs_g[4]) +
+                      derivs_f[6] * (210 * derivs_g[1]^4 * derivs_g[2]^2 + 56 * derivs_g[1]^5 * derivs_g[3] ) +
+                      derivs_f[7] * (28 * derivs_g[1]^6 * derivs_g[2]) +
+                      derivs_f[8] * derivs_g[1]^8 )
+
+
+# n = 9
+n <- 9
+# eBellPol(n,0)
+
+p_9 <- coeff(n,t) * ( derivs_f[1] * derivs_g[9] +
+                      derivs_f[2] * (126 * derivs_g[4] * derivs_g[5] + 84 * derivs_g[3] * derivs_g[6] + 36 * derivs_g[2] * derivs_g[8] 
+                                      + 9 * derivs_g[1] * derivs_g[8]) +
+                      derivs_f[3] * (280 * derivs_g[3]^3 + 1260 * derivs_g[2]  *derivs_g[3] * derivs_g[4] + 315 * derivs_g[1] * derivs_g[4]^2 
+                                     + 378 * derivs_g[2]^2 * derivs_g[5] + 504 * derivs_g[1] * derivs_g[3] * derivs_g[5] 
+                                     + 36 * derivs_g[1]^2 * derivs_g[7]) +
+                      derivs_f[4] * (1260 * derivs_g[2]^3 * derivs_g[3] + 2520 * derivs_g[1] * derivs_g[2] * derivs_g[3]^2 
+                                     + 1890 * derivs_g[1] * derivs_g[2]^2 * derivs_g[4] + 1260 * derivs_g[1]^2 * derivs_g[3] * derivs_g[4] 
+                                     + 756 * derivs_g[1]^2 * derivs_g[2] * derivs_g[5] + 84 * derivs_g[1]^3 * derivs_g[6] ) +
+                      derivs_f[5] * (945 * derivs_g[1] * derivs_g[2]^4 + 3780 * derivs_g[1]^2 * derivs_g[2]^2 * derivs_g[3] 
+                                     + 840 * derivs_g[1]^3 * derivs_g[3]^2 + 1260 * derivs_g[1]^3 * derivs_g[2] * derivs_g[4] 
+                                     + 126 * derivs_g[1]^4 * derivs_g[5]) +
+                      derivs_f[6] * (1260 * derivs_g[1]^3 * derivs_g[2]^3 + 1260 * derivs_g[1]^4 * derivs_g[2] * derivs_g[3] 
+                                     + 126 * derivs_g[1]^5 * derivs_g[4]) +
+                      derivs_f[7] * (378 * derivs_g[1]^5 * derivs_g[2]^2 + 84 * derivs_g[1]^6 * derivs_g[3]) +
+                      derivs_f[8] * (36 * derivs_g[1]^7 * derivs_g[2] ) +
+                      derivs_f[9] * derivs_g[1]^9)
+
+
+
+probs <- c(p_0, p_1, p_2, p_3, p_4, p_5, p_6, p_7, p_8, p_9)
+l_probs <- length(probs)
+n_events <- 0:(l_probs - 1)
+
+stopifnot(sum(probs) <= 1)  # the sum must be lower or equal than 1
+
+
+# MonteCarlo simulation for the Poisson process with parameter Lt, being L the Lamperti random variable of parameter nu
+# The simulated probabilities must coincide with the theoretical ones.
+
+N <- 1000000
+
+S1 <- rstable(N, nu, 1, gamma = cos(nu*pi/2)^(1/nu), delta = 0, pm=1)
+S2 <- rstable(N, nu, 1, gamma = cos(nu*pi/2)^(1/nu), delta = 0, pm=1)
+L <- S1/S2
+
+Nt <- rpois(N, L*t)
+
+P <- c()
+
+for (i in 1: l_probs){    # The vector P will be comparate with probs, which has dimension l_probs
+P[i] <- length(which(Nt==i-1))/N
+}
+
+plot(n_events, probs, type = "p", col = "darkred", pch = 16, cex = 1.5, ylab = expression(p[n](t)), xlab = expression(n), ylim = c(0,max(probs)*1.1) )
+points(n_events, P, type = "p", pch = 17, col = "green", cex = 0.75)
+legend("topright", legend = c("Theoretical", "Simulated"), col = c("darkred", "green"), pch = c(16, 17), cex = 0.75, bty = "n")
+
+#text(x = mean(par("usr")[1:2])*1.82, y = mean(par("usr")[3:4])*1.2, labels = paste("t = ", t), cex = 1)
+text(x = mean(par("usr")[1:2])*1.82, y = mean(par("usr")[3:4])*1.2, labels = bquote(nu == .(nu)), cex = 1)
+}
+
+
+par(mfrow = c(3,3))
+
+nu <- c(0.1, 0.5, 0.9)
+t <- c(1,2,4)
+
+# t = 1
+Ex_fract(nu[1], t[1])
+Ex_fract(nu[2], t[1])
+mtext(expression("Comparison between analytical and simulated values of " * p[n](t) * " for t = 1"), side = 3, at = 2, line = 0.5, cex= 1)
+
+Ex_fract(nu[3], t[1])
+
+#t = 2
+Ex_fract(nu[1], t[2])
+Ex_fract(nu[2], t[2])
+mtext(expression("Comparison between analytical and simulated values of " * p[n](t) * " for t = 2"), side = 3, at = 2, line = 0.5, cex= 1)
+
+Ex_fract(nu[3], t[2])
+
+# t = 5
+Ex_fract(nu[1], t[3])
+Ex_fract(nu[2], t[3])
+mtext(expression("Comparison between analytical and simulated values of " * p[n](t) * " for t = 5"), side = 3, at = 2, line = 0.5, cex= 1)
+
+Ex_fract(nu[3], t[3])
+
+
+
+
+# Figure 2
+rm(list=ls())
+
+Trajectory <- function(nu, N){
+
+S1 <- rstable(N, nu, 1, gamma = cos(nu*pi/2)^(1/nu), delta = 0, pm=1)
+S2 <- rstable(N, nu, 1, gamma = cos(nu*pi/2)^(1/nu), delta = 0, pm=1)
+L <- S1/S2
+
+J <- c()   # Vector of waiting times
+
+for(i in 1:N){
+J[i] <- rexp(1,rate=L[i])
+}
+
+Times = cumsum(J)
+X_t = 1:N
+
+plot(Times , X_t, type='s', xlab = expression(t), ylab = expression(N[t]))
+text(x = mean(par("usr")[1:2])* 0.4, y = mean(par("usr")[3:4])*1.6, labels = bquote(nu == .(nu)), cex = 1.5)
+
+}
+
+
+set.seed(1)
+par(mfrow = c(1,3))
+
+N <- 10000
+nu <- c(0.5, 0.75, 0.9)
+
+Trajectory(nu[1], N)
+Trajectory(nu[2], N)
+mtext(expression("Trajectory of " * N[t]), line = 1)
+Trajectory(nu[3], N)
+
+
+
