@@ -5,7 +5,7 @@
  Notably, these results are essentially coinciding. For the Monte Carlo simulation, we have used 1,000,000 independent random numbers following the Lamperti distribution;
  to this aim, we used that a Lamperti random variable of parameter $\nu$ is equal in law to the ratio of two independent, positive, 
  $\nu$-stable random variables. Then we have generated the vector N, of length 1,000,000, whose j-th component 
- is a realization of a Poisson random variable of parameter $t\cdot$L[j], being L the vector which contains the realizations the Lamperti variable. 
+ is a realization of a Poisson random variable of parameter tL[j], being L the vector which contains the realizations the Lamperti variable. 
  Finally we computed the relative frequency of the events that approximates  $p_n(t)$ for each $n$. 
  We repeated the simulation for $t = 1,2,5$ and $\nu = 0.1, 0.5, 0.9$.
 
